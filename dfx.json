@@ -1,0 +1,27 @@
+{
+  "canisters": {
+    "authAI_backend": {
+      "candid": "src/authAI_backend/authAI_backend.did",
+      "package": "authAI_backend",
+      "type": "rust"
+    },
+    "authAI_frontend": {
+      "dependencies": [
+        "authAI_backend"
+      ],
+      "source": [
+        "src/authAI_frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "authAI_frontend"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}

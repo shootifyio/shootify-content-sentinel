@@ -1,0 +1,19 @@
+type Address = record {
+    street: text;
+    city: text;
+    state: text;
+    zip: nat64;
+    created_by: principal;
+};
+
+type AddressInput = record {
+    street: text;
+    city: text;
+    state: text;
+    zip: nat64;
+};
+
+service : {
+    "set_address": (text, AddressInput) -> ();
+    "get_address": (text) -> (opt Address) query;
+};
