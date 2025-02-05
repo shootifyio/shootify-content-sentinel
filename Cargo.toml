@@ -1,5 +1,5 @@
 [workspace]
 members = [
-    "src/authAI_backend"
+    "src/sentinel_dashboard_backend"
 ]
 resolver = "2"

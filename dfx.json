@@ -1,19 +1,13 @@
 {
   "canisters": {
-    "authAI_backend": {
-      "candid": "src/authAI_backend/authAI_backend.did",
-      "package": "authAI_backend",
+    "sentinel_dashboard_backend": {
+      "candid": "src/sentinel_dashboard_backend/sentinel_dashboard_backend.did",
+      "package": "sentinel_dashboard_backend",
       "type": "rust"
     },
-    "authAI_frontend": {
-      "dependencies": [
-        "authAI_backend"
-      ],
-      "source": [
-        "src/authAI_frontend/dist"
-      ],
+    "shootify_webapp": {
       "type": "assets",
-      "workspace": "authAI_frontend"
+      "source": ["src/webapp"]
     }
   },
   "defaults": {

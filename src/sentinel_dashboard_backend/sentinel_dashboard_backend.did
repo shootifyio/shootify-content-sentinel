@@ -1,0 +1,22 @@
+type StoredImage = record {
+    content: blob;
+    prediction_id: text;
+    uploaded_by: text;
+};
+
+service : {
+    // Image management
+    store_image: (text, text, text, blob) -> (variant { Ok; Err: text });
+    get_image: (text, text) -> (variant { Ok: StoredImage; Err: text }) query;
+    list_images: (text) -> (vec text) query;
+    delete_image: (text, text) -> (variant { Ok; Err: text });
+
+    // Crawling
+    detect_image: (text, text, text) -> (variant { Ok: text; Err: text });
+    detect_image_with_content: (text, text, text, blob) -> (variant { Ok: text; Err: text });
+    get_crawl_results: (text) -> (variant { Ok: text; Err: text }) query;
+
+    // Subject-Image Hash Management
+    add_image_hash: (text, text) -> (variant { Ok; Err: text });
+    get_image_hashes: (text) -> (variant { Ok: vec text; Err: text }) query;
+};

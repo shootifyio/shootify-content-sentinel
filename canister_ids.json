@@ -1,5 +1,8 @@
 {
-  "authAI_backend": {
-    "ic": "n7h3u-gaaaa-aaaao-qeyyq-cai"
+  "sentinel_dashboard_backend": {
+    "ic": "qhsyi-dyaaa-aaaai-q3s4a-cai"
+  },
+  "shootify_webapp": {
+    "ic": "3zekw-yqaaa-aaaai-q3tdq-cai"
   }
 }
