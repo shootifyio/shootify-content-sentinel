@@ -1,6 +1,6 @@
 use std::{borrow::Cow, cell::RefCell};
 
-use candid::{CandidType, Decode, Deserialize, Encode, Principal};
+use candid::{CandidType, Decode, Encode, Principal};
 use ic_cdk::caller;
 use ic_stable_structures::{
     memory_manager::{MemoryId, MemoryManager, VirtualMemory},
@@ -9,22 +9,21 @@ use ic_stable_structures::{
 };
 
 type Memory = VirtualMemory<DefaultMemoryImpl>;
+use serde::{Deserialize, Serialize};
 
-#[derive(CandidType, Deserialize)]
-struct Address {
-    street: String,
-    city: String,
-    state: String,
-    zip: u64,
-    created_by: Principal,
+
+#[derive(CandidType, Serialize, Deserialize)]
+struct StoredImage {
+    content: Vec<u8>,
+    uploaded_by: Principal,
 }
 
-impl Storable for Address {
-    fn to_bytes(&self) -> std::borrow::Cow<[u8]> {
+impl Storable for StoredImage {
+    fn to_bytes(&self) -> Cow<[u8]> {
         Cow::Owned(Encode!(self).unwrap())
     }
 
-    fn from_bytes(bytes: std::borrow::Cow<[u8]>) -> Self {
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
         Decode!(bytes.as_ref(), Self).unwrap()
     }
 
@@ -32,45 +31,65 @@ impl Storable for Address {
 }
 
 thread_local! {
-    // The memory manager is used for simulating multiple memories. Given a `MemoryId` it can
-    // return a memory that can be used by stable structures.
+    // Memory manager for handling stable memory
     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
         RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
 
-    // Initialize a `StableBTreeMap` with `MemoryId(0)`.
-    static STABLE_ADDRESSES: RefCell<StableBTreeMap<String, Address, Memory>> = RefCell::new(
+    // Stable BTreeMap to store images, using a string key (e.g., image name)
+    static STABLE_IMAGES: RefCell<StableBTreeMap<String, StoredImage, Memory>> = RefCell::new(
         StableBTreeMap::init(
             MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(0))),
         )
     );
 }
 
-#[derive(CandidType, Deserialize)]
-struct AddressInput {
-    street: String,
-    city: String,
-    state: String,
-    zip: u64,
-}
-
+/// Store an image in the stable memory
 #[ic_cdk::update]
-fn set_address(name: String, input: AddressInput) {
-    let caller = caller();
-    STABLE_ADDRESSES.with_borrow_mut(|s| {
-        s.insert(
-            name,
-            Address {
-                street: input.street,
-                city: input.city,
-                state: input.state,
-                zip: input.zip,
-                created_by: caller,
+fn store_image(name: String, content: Vec<u8>) -> Result<(), String> {
+    if name.is_empty() {
+        return Err("Image name cannot be empty.".to_string());
+    }
+    if content.is_empty() {
+        return Err("Image content cannot be empty.".to_string());
+    }
+
+    let uploader = caller();
+    STABLE_IMAGES.with_borrow_mut(|images| {
+        images.insert(
+            name.clone(),
+            StoredImage {
+                content,
+                uploaded_by: uploader,
             },
-        )
+        );
     });
+    ic_cdk::println!("Image '{}' stored successfully by {}", name, uploader);
+    Ok(())
 }
 
+/// Retrieve an image from the stable memory by its name
 #[ic_cdk::query]
-fn get_address(name: String) -> Option<Address> {
-    STABLE_ADDRESSES.with_borrow(|s| s.get(&name))
+fn get_image(name: String) -> Option<StoredImage> {
+    STABLE_IMAGES.with_borrow(|images| images.get(&name))
+}
+
+
+/// List all stored image names
+#[ic_cdk::query]
+fn list_images() -> Vec<String> {
+    STABLE_IMAGES.with_borrow(|images| {
+        images.iter().map(|(key, _)| key.clone()).collect()
+    })
+}
+
+/// Delete an image by its name
+#[ic_cdk::update]
+fn delete_image(name: String) -> Result<(), String> {
+    let exists = STABLE_IMAGES.with_borrow_mut(|images| images.remove(&name).is_some());
+    if exists {
+        ic_cdk::println!("Image '{}' deleted successfully", name);
+        Ok(())
+    } else {
+        Err(format!("Image '{}' not found.", name))
+    }
 }

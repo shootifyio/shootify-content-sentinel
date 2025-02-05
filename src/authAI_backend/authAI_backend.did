@@ -1,19 +1,11 @@
-type Address = record {
-    street: text;
-    city: text;
-    state: text;
-    zip: nat64;
-    created_by: principal;
-};
-
-type AddressInput = record {
-    street: text;
-    city: text;
-    state: text;
-    zip: nat64;
+type StoredImage = record {
+    content: blob;
+    uploaded_by: principal;
 };
 
 service : {
-    "set_address": (text, AddressInput) -> ();
-    "get_address": (text) -> (opt Address) query;
+    store_image: (text, blob) -> (variant { Ok; Err: text });
+    get_image: (text) -> (opt StoredImage) query;
+    list_images: () -> (vec text) query;
+    delete_image: (text) -> (variant { Ok; Err: text });
 };
