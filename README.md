@@ -1,6 +1,6 @@
 # Shootify Content Sentinel
 
-![Shootify Logo](./assets/logo.png) <!-- Replace with the actual path to your logo if available -->
+![Shootify Logo](./logo.png) <!-- Replace with the actual path to your logo if available -->
 
 ## Overview
 
